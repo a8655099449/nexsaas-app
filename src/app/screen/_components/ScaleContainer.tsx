@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 
-export default function ScaleContainer({ children }: { children: React.ReactNode }) {
+export default function ScaleContainer({ children, width = 1920, height = 1080 }: { children: React.ReactNode, width?: number, height?: number }) {
   const [scaleX, setScaleX] = useState(1);
   const [scaleY, setScaleY] = useState(1);
 

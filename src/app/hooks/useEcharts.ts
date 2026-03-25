@@ -14,7 +14,7 @@ const useEchart = ({
   onCreateInstance,
   manual = false,
 }: useEchartProps) => {
-  const instance = useRef<ECharts>();
+  const instance = useRef<ECharts | null>(null);
   const wrapDom = useRef<HTMLDivElement>(null);
   const ref = useRef({
     options: {} as any,
