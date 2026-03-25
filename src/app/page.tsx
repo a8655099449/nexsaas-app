@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { 
   Menu, ArrowRight, TrendingUp, Zap, 
   ShieldCheck, Blocks, BarChart3, Users, 
@@ -51,10 +52,10 @@ export default function Home() {
               <a href="#features" className="text-slate-600 hover:text-blue-600 transition-colors font-medium">产品功能</a>
               <a href="#solutions" className="text-slate-600 hover:text-blue-600 transition-colors font-medium">解决方案</a>
               <a href="#pricing" className="text-slate-600 hover:text-blue-600 transition-colors font-medium">价格方案</a>
-              <a href="#" className="text-slate-600 hover:text-blue-600 transition-colors font-medium">登录</a>
-              <a href="#cta" className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-full text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 shadow-lg shadow-blue-500/30 transition-all duration-200 cursor-pointer hover:-translate-y-0.5">
+              <Link href="/login" className="text-slate-600 hover:text-blue-600 transition-colors font-medium">登录</Link>
+              <Link href="/trial" className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-full text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 shadow-lg shadow-blue-500/30 transition-all duration-200 cursor-pointer hover:-translate-y-0.5">
                 免费试用
-              </a>
+              </Link>
             </div>
             {/* 移动端菜单按钮 */}
             <div className="md:hidden flex items-center">
@@ -84,10 +85,10 @@ export default function Home() {
               一体化云端工作台，将混乱的数据转化为清晰的洞察。让您的团队专注于创新，把繁杂流程交给我们。
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
-              <a href="#cta" className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-full text-white bg-orange-500 hover:bg-orange-600 shadow-xl shadow-orange-500/20 transition-all duration-200 cursor-pointer hover:-translate-y-1">
+              <Link href="/trial" className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-full text-white bg-orange-500 hover:bg-orange-600 shadow-xl shadow-orange-500/20 transition-all duration-200 cursor-pointer hover:-translate-y-1">
                 立即开启免费试用
                 <ArrowRight className="ml-2 w-5 h-5" />
-              </a>
+              </Link>
               <a href="#demo" className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 border-2 border-slate-200 text-lg font-medium rounded-full text-slate-700 bg-white/50 hover:bg-white/80 hover:border-slate-300 backdrop-blur-sm transition-all duration-200 cursor-pointer hover:-translate-y-1">
                 预约产品演示
               </a>
@@ -242,16 +243,11 @@ export default function Home() {
             <p className="text-lg md:text-xl text-blue-100 mb-10 max-w-2xl mx-auto relative z-10">
               无需绑定信用卡，即刻获得 14 天全功能免费体验。已有 10,000+ 团队加入。
             </p>
-            <form className="flex flex-col sm:flex-row max-w-lg mx-auto gap-3 relative z-10">
-              <input 
-                type="email" 
-                placeholder="输入您的工作邮箱" 
-                className="flex-1 w-full px-5 py-4 rounded-xl text-slate-900 border-0 focus:ring-4 focus:ring-orange-500/50 shadow-inner bg-white/90 placeholder-slate-400 font-medium" 
-              />
-              <button type="submit" className="w-full sm:w-auto px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-colors shadow-lg shadow-orange-500/30 whitespace-nowrap cursor-pointer">
-                免费创建账号
-              </button>
-            </form>
+            <div className="flex justify-center mt-8 relative z-10">
+              <Link href="/trial" className="w-full sm:w-auto px-10 py-5 bg-orange-500 hover:bg-orange-600 text-white text-xl font-bold rounded-2xl transition-all duration-300 shadow-2xl shadow-orange-500/40 hover:-translate-y-1 cursor-pointer">
+                极速创建免费工作空间
+              </Link>
+            </div>
             <p className="mt-4 text-sm text-blue-200 relative z-10 group cursor-default">
               注册即表明您同意服务条款和隐私政策。
             </p>
