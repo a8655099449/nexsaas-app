@@ -34,13 +34,12 @@ export default function TimesheetPage() {
 
   const handleExport = () => {
     if (data.length === 0) return;
-    const csvContent = exportToWeeklyCsv(data);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const excelContent = exportToWeeklyCsv(data);
+    const blob = new Blob([excelContent], { type: 'application/vnd.ms-excel' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `周报分析_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`);
-    link.style.visibility = 'hidden';
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `工时周报分析_${new Date().toISOString().split('T')[0]}.xls`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

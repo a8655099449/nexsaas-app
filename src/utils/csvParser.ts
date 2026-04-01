@@ -125,68 +125,99 @@ export const parseTimesheetCsv = (csvText: string): DaySummary[] => {
 };
 
 /**
- * 将数据转换为符合截图样式的周报矩阵 CSV
+ * 将数据转换为带样式的 Excel 兼容 HTML (Hifi 修复版)
  */
 export const exportToWeeklyCsv = (data: DaySummary[]): string => {
   if (data.length === 0) return "";
 
-  // 1. 按周分组
+  // 1. 按周分组 (修复分组偏移问题)
   const weekGroups: Record<string, DaySummary[]> = {};
   data.forEach(d => {
-    const date = new Date(d.date);
+    const date = new Date(d.date + "T00:00:00"); // 加上 T00 防止时区偏移
     const day = date.getDay();
     const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-    const monday = new Date(date.setDate(diff));
+    const monday = new Date(date);
+    monday.setDate(diff);
     const weekKey = monday.toISOString().split('T')[0];
     
     if (!weekGroups[weekKey]) weekGroups[weekKey] = [];
     weekGroups[weekKey].push(d);
   });
 
-  const header = ["周一", "周二", "周三", "周四", "周五", "周六", "周日", "总结"];
-  const csvRows = [header.join(",")];
+  // 2. 构建样式 (针对 Excel 优化)
+  const styles = `
+    <style>
+      table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+      td { 
+        border: 1px solid #c0c0c0; 
+        padding: 10px; 
+        vertical-align: top; 
+        mso-number-format:"\\@"; /* 强制文本格式 */
+        white-space: normal; 
+        word-wrap: break-word;
+        font-family: '微软雅黑', sans-serif;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .header { background: #f2f2f2; font-weight: bold; text-align: center; }
+      .proj-title { font-weight: bold; color: #000; }
+      .desc-label { font-weight: bold; color: #666; }
+      br { mso-data-placement:same-cell; }
+    </style>
+  `;
 
-  // 2. 对每个周导出对应行
+  let html = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      ${styles}
+    </head>
+    <body xml:lang="zh-CN">
+      <table>
+        <tr class="header">
+          <td width="250">周一</td><td width="250">周二</td><td width="250">周三</td>
+          <td width="250">周四</td><td width="250">周五</td><td width="250">周六</td>
+          <td width="250">周日</td><td width="250">当周总结</td>
+        </tr>
+  `;
+
+  // 3. 按周填充数据 (保证一周一行)
   Object.keys(weekGroups).sort().forEach(weekKey => {
     const weekData = weekGroups[weekKey];
-    const row = Array(8).fill(""); // 7天 + 1列总结
-    const weeklyProjectMap: Record<string, { projectName: string, totalHours: number }> = {};
+    const rowCells = Array(8).fill("<td></td>");
+    const weeklySummaryMap: Record<string, number> = {};
 
     weekData.forEach(day => {
-      const d = new Date(day.date);
-      const dayIndex = (d.getDay() + 6) % 7; // 周一为 0
+      const d = new Date(day.date + "T00:00:00");
+      const dayIndex = (d.getDay() + 6) % 7; 
       
-      // 累计全周项目汇总
-      day.projectGroups.forEach(pg => {
-        if (!weeklyProjectMap[pg.projectName]) {
-          weeklyProjectMap[pg.projectName] = { projectName: pg.projectName, totalHours: 0 };
-        }
-        weeklyProjectMap[pg.projectName].totalHours += pg.totalHours;
-      });
+      const dayContent = day.projectGroups.map(pg => {
+        // 汇总当周数据
+        weeklySummaryMap[pg.projectName] = (weeklySummaryMap[pg.projectName] || 0) + pg.totalHours;
 
-      // 格式化单元格内容：项目名 总工时h\n [序号]. 摘要\n 处理说明: 说明内容
-      const cellContent = day.projectGroups.map(pg => {
-        const title = `${pg.projectName} ${pg.totalHours.toFixed(1)}h`;
-        const summaries = pg.items.map((item, idx) => {
-          const desc = item.description ? `\n处理说明:\n${item.description}` : "";
-          return `${idx + 1}.${item.summary}${desc}`;
-        }).join('\n');
-        return `${title}\n${summaries}`;
-      }).join('\n\n');
+        const title = `<span class="proj-title">${pg.projectName} ${pg.totalHours.toFixed(1)}h</span>`;
+        const items = pg.items.map((item, idx) => {
+          const desc = item.description ? `<br/><span class="desc-label">处理说明:</span><br/>${item.description.replace(/\n/g, "<br/>")}` : "";
+          return `<br/>${idx + 1}.${item.summary}${desc}`;
+        }).join('<br/>');
 
-      row[dayIndex] = `"${cellContent.replace(/"/g, '""')}"`;
+        return `${title}${items}`;
+      }).join('<br/><br/>');
+
+      rowCells[dayIndex] = `<td>${dayContent}</td>`;
     });
 
-    // 生成总结栏内容 (第 8 列)
-    const summaryContent = Object.values(weeklyProjectMap)
-      .sort((a, b) => b.totalHours - a.totalHours)
-      .map(p => `${p.projectName} ${p.totalHours.toFixed(1)}h`)
-      .join('\n');
+    // 填充当周总结栏 (第八列)
+    const summaryList = Object.entries(weeklySummaryMap)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, hours]) => `<span class="proj-title">${name}</span>: ${hours.toFixed(1)}h`)
+      .join('<br/><br/>');
     
-    row[7] = `"${summaryContent.replace(/"/g, '""')}"`;
+    rowCells[7] = `<td>${summaryList}</td>`;
 
-    csvRows.push(row.join(","));
+    html += `<tr>${rowCells.join("")}</tr>`;
   });
 
-  return "\ufeff" + csvRows.join("\r\n");
+  html += `</table></body></html>`;
+  return html;
 };
