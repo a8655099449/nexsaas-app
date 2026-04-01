@@ -9,7 +9,14 @@ import BusinessCompareChart from '@/app/screen/_components/charts/BusinessCompar
 
 import { dashboardMockData } from '@/app/screen/_mock/mockData';
 
-const GlassCard = ({ title, extra, children, className = '' }: any) => (
+interface GlassCardProps {
+  title?: React.ReactNode;
+  extra?: React.ReactNode;
+  children?: React.ReactNode;
+  className?: string;
+}
+
+const GlassCard = ({ title, extra, children, className = '' }: GlassCardProps) => (
   <div className={`bg-[#0d1b3e]/80 border border-blue-500/30 rounded-md backdrop-blur-sm p-3 xl:p-4 flex flex-col shadow-[0_0_15px_rgba(0,100,255,0.1)] ${className}`}>
     {(title || extra) && (
       <div className="flex justify-between items-center mb-3 flex-shrink-0">

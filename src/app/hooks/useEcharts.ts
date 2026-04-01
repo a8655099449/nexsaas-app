@@ -17,7 +17,7 @@ const useEchart = ({
   const instance = useRef<ECharts | null>(null);
   const wrapDom = useRef<HTMLDivElement>(null);
   const ref = useRef({
-    options: {} as any,
+    options: {} as Partial<echarts.EChartsCoreOption>,
     isRender: false,
   });
 
