@@ -8,8 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "NexSaaS - 现代企业的高效增长引擎",
-  description: "一体化云端工作台，将混乱的数据转化为清晰的洞察。",
+  title: "NexSaaS 效率中心 - 现代企业的高效工具集",
+  description: "精简、高效、纯前端。NexSaaS 致力于通过极致的工具体验提升你的生产力。",
 };
 
 export default function RootLayout({
