@@ -198,6 +198,14 @@ export default function ImageOptimizerPage() {
                     onChange={(e) => setSettings({ ...settings, quality: parseInt(e.target.value) })}
                     className="w-full accent-primary h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                   />
+                  {settings.format === 'png' && (
+                    <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-2xl border border-amber-100 animate-in fade-in slide-in-from-top-1 duration-300">
+                      <AlertCircle className="text-amber-500 shrink-0" size={14} />
+                      <p className="text-[10px] text-amber-600 font-medium leading-relaxed">
+                        PNG 为无损格式，调整质量对体积无效。且浏览器导出巨型图片时无优化算法，体积极易增加。建议改用 <b>WEBP</b> 格式实现极致压缩。
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-3">
@@ -337,9 +345,16 @@ export default function ImageOptimizerPage() {
                           {file.status === 'done' && file.outputSize && (
                             <>
                               <ArrowRight size={10} className="text-primary" />
-                              <span className="bg-green-100 text-green-600 px-2 py-0.5 rounded-full">
-                                {formatSize(file.outputSize)} (-{Math.round((1 - file.outputSize / file.originalSize) * 100)}%)
-                              </span>
+                              {(() => {
+                                const ratio = 1 - file.outputSize / file.originalSize;
+                                const isGrow = ratio < 0;
+                                const percent = Math.abs(Math.round(ratio * 100));
+                                return (
+                                  <span className={`px-2 py-0.5 rounded-full ${isGrow ? 'bg-red-100/80 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                                    {formatSize(file.outputSize)} ({isGrow ? '+' : '-'}{percent}%)
+                                  </span>
+                                );
+                              })()}
                             </>
                           )}
                         </div>
