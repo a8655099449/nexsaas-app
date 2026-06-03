@@ -175,6 +175,7 @@ export const exportToWeeklyCsv = (data: DaySummary[]): string => {
     <body xml:lang="zh-CN">
       <table>
         <tr class="header">
+          <td width="180">时间范围</td>
           <td width="250">周一</td><td width="250">周二</td><td width="250">周三</td>
           <td width="250">周四</td><td width="250">周五</td><td width="250">周六</td>
           <td width="250">周日</td><td width="250">当周总结</td>
@@ -184,8 +185,23 @@ export const exportToWeeklyCsv = (data: DaySummary[]): string => {
   // 3. 按周填充数据 (保证一周一行)
   Object.keys(weekGroups).sort().forEach(weekKey => {
     const weekData = weekGroups[weekKey];
-    const rowCells = Array(8).fill("<td></td>");
+    const rowCells = Array(9).fill("<td></td>");
     const weeklySummaryMap: Record<string, number> = {};
+    let weeklyTotal = 0;
+
+    // 计算周一至周日的范围
+    const mondayDate = new Date(weekKey + "T00:00:00");
+    const sundayDate = new Date(mondayDate);
+    sundayDate.setDate(mondayDate.getDate() + 6);
+    
+    const formatDate = (date: Date) => {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}${m}${d}`;
+    };
+    const dateRangeStr = `${formatDate(mondayDate)}～${formatDate(sundayDate)}`;
+    rowCells[0] = `<td>${dateRangeStr}</td>`;
 
     weekData.forEach(day => {
       const d = new Date(day.date + "T00:00:00");
@@ -194,6 +210,7 @@ export const exportToWeeklyCsv = (data: DaySummary[]): string => {
       const dayContent = day.projectGroups.map(pg => {
         // 汇总当周数据
         weeklySummaryMap[pg.projectName] = (weeklySummaryMap[pg.projectName] || 0) + pg.totalHours;
+        weeklyTotal += pg.totalHours;
 
         const title = `<span class="proj-title">${pg.projectName} ${pg.totalHours.toFixed(1)}h</span>`;
         const items = pg.items.map((item, idx) => {
@@ -204,16 +221,20 @@ export const exportToWeeklyCsv = (data: DaySummary[]): string => {
         return `${title}${items}`;
       }).join('<br/><br/>');
 
-      rowCells[dayIndex] = `<td>${dayContent}</td>`;
+      rowCells[dayIndex + 1] = `<td>${dayContent}</td>`;
     });
 
-    // 填充当周总结栏 (第八列)
-    const summaryList = Object.entries(weeklySummaryMap)
+    // 填充当周总结栏 (第九列)
+    let summaryList = Object.entries(weeklySummaryMap)
       .sort((a, b) => b[1] - a[1])
       .map(([name, hours]) => `<span class="proj-title">${name}</span>: ${hours.toFixed(1)}h`)
       .join('<br/><br/>');
     
-    rowCells[7] = `<td>${summaryList}</td>`;
+    if (weeklyTotal > 0) {
+      summaryList += `<br/><br/><span class="proj-title">合计: ${weeklyTotal.toFixed(1)}h</span>`;
+    }
+    
+    rowCells[8] = `<td>${summaryList}</td>`;
 
     html += `<tr>${rowCells.join("")}</tr>`;
   });
